@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+
+  "name": "Bittrex Enhanced",
+  "description": "Enhance your Bittrex experience by including USD values alongside BTC prices.",
+  "version": "1.2",
+
+  "browser_action": {
+    "default_title": "Enhance Trex"
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "https://bittrex.com/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "icons": {
+    "128": "icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://bittrex.com/Market/Index?MarketName=BTC*",
+        "https://bittrex.com/Balance",
+        "https://bittrex.com/home/markets*",
+        "https://bittrex.com/Home/Markets*",
+        "https://bittrex.com/"
+      ],
+      "js": ["enhancer.js"],
+      "css": ["enhanced-styles.css"]
+    }
+  ]
+}
