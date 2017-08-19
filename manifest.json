@@ -2,8 +2,8 @@
   "manifest_version": 2,
 
   "name": "Bittrex Enhanced",
-  "description": "Enhance your Bittrex experience by including USD values alongside BTC prices.",
-  "version": "1.2",
+  "description": "Enhance your Bittrex experience by including USD values alongside BTC prices, and using the TradingView chart widget instead.",
+  "version": "1.3",
 
   "browser_action": {
     "default_title": "Enhance Trex"
@@ -23,7 +23,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://bittrex.com/Market/Index?MarketName=BTC*",
+        "https://bittrex.com/Market/Index?MarketName=BTC-*",
         "https://bittrex.com/Balance",
         "https://bittrex.com/home/markets*",
         "https://bittrex.com/Home/Markets*",
