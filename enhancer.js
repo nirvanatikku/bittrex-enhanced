@@ -173,10 +173,47 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
     };
   }
 }
+Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker){
+  const script = document.createElement('script');
+  script.src = '//s3.tradingview.com/tv.js';
+  script.async = true;
+  script.addEventListener('load', function(){
+    let insertTradingViewChartCode = ['new TradingView.widget({'];
+    insertTradingViewChartCode.push('"symbol": "'+ticker+'","width": "100%","height": 550,"interval": "30","timezone": "Etc/UTC",');
+    insertTradingViewChartCode.push('"theme": "White","style": "1","locale": "en","toolbar_bg": "#f1f3f6",');
+    insertTradingViewChartCode.push('"enable_publishing": false,"withdateranges": true, "studies": ["RSI@tv-basicstudies","MACD@tv-basicstudies"],');
+    insertTradingViewChartCode.push('"hide_side_toolbar": false, "show_popup_button": true, "popup_width": "1000", "popup_height": "650", ');
+    insertTradingViewChartCode.push('"allow_symbol_change": true, "hideideas": true, "container_id": "tv-chart-'+ticker+'"});');
+    const chartScript = document.createElement('script');
+    chartScript.type = 'text/javascript';
+    chartScript.innerText = insertTradingViewChartCode.join('');
+    document.body.appendChild(chartScript);
+  });
+  document.head.appendChild(script);
+}
+Enhancer.swapCharts = function swapCharts(){
+  const charts = document.querySelectorAll('.chart-wrapper');
+  if(charts.length === 2){ // timeline, orderbook
+    // Clean
+    let node = charts[0];
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+    let ticker = document.location.search.substring(1).split('&')[0].split('=')[1];
+    let t = ticker.split('-');
+    ticker = 'BITTREX:'+t[1]+t[0]; // e.g. BTC-NEO => BITTREX:NEOBTC
+    const newChartParent = document.createElement('div');
+    newChartParent.id = "tv-chart-"+ticker;
+    node.appendChild(newChartParent);
+    // Load TV
+    Enhancer.initTradingViewWidget(ticker);
+  }
+}
 Enhancer.getDataProcessors = function getDataProcessors(proc){
   switch(proc){
     case 'market':
       return function(doc){
+        Enhancer.swapCharts();
         Enhancer.interval = setInterval(function(){ 
           const curPrice = Enhancer.getCurrentPrice();
           const orderTables = Enhancer.getOrderTables();
