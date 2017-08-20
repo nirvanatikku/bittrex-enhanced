@@ -3,19 +3,21 @@
 
   "name": "Bittrex Enhanced",
   "description": "Enhance your Bittrex experience by including USD values alongside BTC prices, and using the TradingView chart widget instead.",
-  "version": "1.3.1",
+  "version": "1.4",
 
   "browser_action": {
-    "default_title": "Enhance Trex"
+    "default_title": "Enhance Trex",
+    "default_popup": "settings.html"
   },
   "permissions": [
+    "storage",
     "tabs",
     "activeTab",
     "https://bittrex.com/*"
   ],
   "background": {
     "scripts": ["background.js"],
-    "persistent": false
+    "persistent": true
   },
   "icons": {
     "128": "icon128.png"
