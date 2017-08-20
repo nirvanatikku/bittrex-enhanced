@@ -15,7 +15,7 @@ function updateConfig(prop){
         }
         let val = tgt.getAttribute('data-enabled') === 'true' ? true : false;
         data['bittrex-enhanced-'+prop] = !val;
-        evt.target.setAttribute('data-enabled', !val);
+        tgt.setAttribute('data-enabled', String(!val));
         chrome.storage.sync.set(data);
     };
 }
