@@ -1,0 +1,34 @@
+<html>
+<head>
+<style>
+body { width:200px; height:100px; }
+body h1 { text-align: center; margin:0 auto; border-bottom:1px solid #eee; }
+button { border:0px ; width:100%; padding:10px 15px; background: #0072ed; color: white; text-align:left; cursor:pointer; }
+button[data-enabled=true] { color:white; }
+button[data-enabled=false] { background: #eee; color:#0072ed; }
+button[data-enabled=true] .enabled { display:none; }
+button[data-enabled=true] .disabled { display:block; }
+button[data-enabled=false] .enabled { display:block; }
+button[data-enabled=false] .disabled { display:none; }
+</style>
+</head>
+<body>
+<h1><img src="icon128.png"/></h1>
+<h3>Settings</h3>
+<form onSubmit="return false;">
+    <div>
+        <button id="configShowUsdVal" type="button" data-enabled="true">
+            <span class="enabled">Show $USD Price</span>
+            <span class="disabled">Hide $USD Price</span>
+        </button>
+    </div>
+    <div>
+        <button id="configShowTradingViewChart" type="button" data-enabled="true">
+            <span class="enabled">Show TradingView Chart</span>
+            <span class="disabled">Hide TradingView Chart</span>
+        </button>
+    </div>
+</form>
+<script src="settings.js"></script>
+</body>
+</html>
