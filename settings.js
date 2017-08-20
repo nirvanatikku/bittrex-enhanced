@@ -9,9 +9,14 @@ function getConfigNodes(){ // buttons
 function updateConfig(prop){
     return function(evt){
         let data = {};
-        data['bittrex-enhanced-'+prop] = evt.target.getAttribute('data-enabled') === 'true' ? false : true;
+        let tgt = evt.target;
+        if(tgt.nodeName.toLowerCase() === 'span'){
+            tgt = tgt.parentElement;
+        }
+        let val = tgt.getAttribute('data-enabled') === 'true' ? true : false;
+        data['bittrex-enhanced-'+prop] = !val;
+        evt.target.setAttribute('data-enabled', !val);
         chrome.storage.sync.set(data);
-        evt.target.setAttribute('data-enabled', data['bittrex-enhanced-'+prop]);
     };
 }
 function initConfig(){
