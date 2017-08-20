@@ -44,18 +44,26 @@ function whenReady(callback) {
 //
 // 
 const Enhancer = {};
+Enhancer.opts = {
+  tvChart: false,
+  usdVal: false
+};
 Enhancer.interval = null;
 Enhancer.getCurrentPrice = function getCurrentPrice(){
   const node = document.querySelectorAll('[data-bind="text:navigation.displayBitcoinUsd"]')[0];
   return parseFloat(node.innerText.split('=')[1].replace('$', ''));
 }
-Enhancer.load = function load(){
-  setTimeout(function(){
-    Enhancer.go(window, document);
-  }, 500);
+Enhancer.unload = function unload(){
+  clearInterval(Enhancer.interval);
 }
 Enhancer.notifyBackground = function notifyBackground(){
-  chrome.runtime.sendMessage({processing:true});
+  chrome.runtime.sendMessage({
+    processing:true
+  }, function(settings){
+    if(settings.tvChart) Enhancer.opts.tvChart = settings.tvChart;
+    if(settings.usdVal) Enhancer.opts.usdVal = settings.usdVal;
+    Enhancer.go();
+  });
 }
 Enhancer.getMarketsTable = function getMarketsTable(){
   const marketsTable = document.getElementsByTagName('table')[2]; 
@@ -230,39 +238,47 @@ Enhancer.swapCharts = function swapCharts(){
     Enhancer.initTradingViewWidget(ticker);
   }
 }
-Enhancer.getDataProcessors = function getDataProcessors(proc){
+Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
   switch(proc){
     case 'market':
       return function(doc){
-        Enhancer.swapCharts();
-        Enhancer.interval = setInterval(function(){ 
-          const curPrice = Enhancer.getCurrentPrice();
-          const orderTables = Enhancer.getOrderTables();
-          Enhancer.enhanceOrderTable('buy', orderTables.buy); 
-          Enhancer.enhanceOrderTable('sell', orderTables.sell);
-          Enhancer.enhanceMarketHistoryTable(orderTables.history);
-        }, 200);
+        if(opts.tvChart){
+          Enhancer.swapCharts();
+        }
+        if(opts.usdVal){
+          Enhancer.interval = setInterval(function(){ 
+            const curPrice = Enhancer.getCurrentPrice();
+            const orderTables = Enhancer.getOrderTables();
+            Enhancer.enhanceOrderTable('buy', orderTables.buy); 
+            Enhancer.enhanceOrderTable('sell', orderTables.sell);
+            Enhancer.enhanceMarketHistoryTable(orderTables.history);
+          }, 200);
+        }
       };
     case 'balance':
       return function (doc){
-        Enhancer.interval = setInterval(function(){
-          const balanceTable = Enhancer.getBalanceTable();
-          Enhancer.enhanceBalanceTable(balanceTable);
-        }, 200);
+        if(opts.usdVal){
+          Enhancer.interval = setInterval(function(){
+            const balanceTable = Enhancer.getBalanceTable();
+            Enhancer.enhanceBalanceTable(balanceTable);
+          }, 200);
+        }
       }
     case 'markets':
       return function (doc){
-        Enhancer.interval = setInterval(function(){
-          const btcMarketsTable = Enhancer.getMarketsTable();
-          Enhancer.enhanceMarketsTable(btcMarketsTable);
-        }, 200);
+        if(opts.usdVal){
+          Enhancer.interval = setInterval(function(){
+            const btcMarketsTable = Enhancer.getMarketsTable();
+            Enhancer.enhanceMarketsTable(btcMarketsTable);
+          }, 200);
+        }
       }
     default:
       return function(doc){}
   } 
 };
-Enhancer.go = function go(win, doc){
-  const url = win.location.href.toLowerCase();
+Enhancer.go = function go(){
+  const url = window.location.href.toLowerCase();
   let type = null;
   if(url.indexOf('/market/') > -1){
     type = 'market';
@@ -271,11 +287,10 @@ Enhancer.go = function go(win, doc){
   } else if (url.indexOf('/home/markets') > -1){
     type = 'markets';
   }
-  return Enhancer.getDataProcessors(type)(doc);
+  return Enhancer.getDataProcessors(type, Enhancer.opts)(document);
 }
 window.Enhancer = Enhancer;
 
 whenReady(function(){
-  Enhancer.load();
   Enhancer.notifyBackground();
 });
