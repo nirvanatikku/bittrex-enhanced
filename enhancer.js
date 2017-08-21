@@ -199,8 +199,8 @@ Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker){
       enable_publishing: false,
       withdateranges: true,
       studies: [
-        'RSI@tv-basicstudies',
-        'MACD@tv-basicstudies'
+        // 'RSI@tv-basicstudies',
+        // 'MACD@tv-basicstudies'
       ],
       hide_side_toolbar: false,
       show_popup_button: true,
