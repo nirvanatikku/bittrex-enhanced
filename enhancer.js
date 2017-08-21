@@ -243,7 +243,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
     case 'market':
       return function(doc){
         if(opts.tvChart){
-          Enhancer.swapCharts();
+          let chartIframe = document.getElementById('ifrm');
+          chartIframe.onload = function(){ Enhancer.swapCharts(); };
         }
         if(opts.usdVal){
           Enhancer.interval = setInterval(function(){ 
