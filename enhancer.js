@@ -17,11 +17,11 @@ function updateHeader(headerId, col){
   col.appendChild(enhancedHeader);
 }
 
-function updateColumn(colId, col){
+function updateColumn(colId, col, marketType){
   let rowId = 'enhanced-val-'+colId.replace(/\./g, '-');
   let existingNodes = document.querySelectorAll('.'+rowId);
   const btcVal = parseFloat(col.childNodes.length > 0 ? col.childNodes[0].textContent : col.innerText);
-  let price = '$' + (Enhancer.getCurrentPrice() * btcVal).format(2);
+  let price = '$' + (Enhancer.getCurrentPrice(marketType) * btcVal).format(2);
   if(existingNodes.length === 0){
     const newNode = document.createElement('span');
     newNode.style.color = CONSTANTS.color;
@@ -58,29 +58,36 @@ Enhancer.interval = null;
 Enhancer.initBtcPrice = function initBtcPrice(){
   const node = document.querySelectorAll('[data-bind="text:navigation.displayBitcoinUsd"]')[0];
   const btcUsdPrice = parseFloat(node.innerText.split('=')[1].replace('$', ''));
-  return Enhancer.prices.btcUsd = btcUsdPrice;
+  return btcUsdPrice;
 }
 Enhancer.initEthPrice = function initEthPrice(){
   const ethTickerURL = 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH';
   let xhr = new XMLHttpRequest();
   xhr.open('GET', ethTickerURL, false);
   xhr.send(null);
-  return Enhancer.prices.ethBtc = JSON.parse(xhr.responseText).result.Last;
+  return JSON.parse(xhr.responseText).result.Last;
 }
 Enhancer.updatePrices = function updatePrices(){
-  if(Enhancer.marketType === 'eth'){
-    Enhancer.initEthPrice();
+  Enhancer.prices.ethBtc = Enhancer.initEthPrice();
+  Enhancer.prices.btcUsd = Enhancer.initBtcPrice();
+}
+Enhancer.getMarketType = function getMarketType(mktType){
+  if(!mktType && Enhancer.marketType) {
+    return Enhancer.marketType;
   }
-  Enhancer.initBtcPrice();
+  if(!mktType){
+    mktType = Enhancer.getTickerQP();
+  }
+  let mkt = null;
+  if(mktType.indexOf('-') > -1){
+    mkt = mktType.split('-')[0].toLowerCase();
+  }
+  return Enhancer.marketType = (mkt === 'btc' ? 'btc' : 
+                               (mkt === 'eth' ? 'eth' : ''));
 }
-Enhancer.getMarketType = function getMarketType(){
-  if(Enhancer.marketType) return Enhancer.marketType;
-  const mkt = Enhancer.getTickerQP().split('-')[0].toLowerCase();
-  return Enhancer.marketType = (mkt === 'btc' ? 'btc' : (mkt === 'eth' ? 'eth' : null));
-}
-Enhancer.getCurrentPrice = function getCurrentPrice(){
-  const marketType = Enhancer.getMarketType();
-  switch(marketType){
+Enhancer.getCurrentPrice = function getCurrentPrice(marketType){
+  let mkt = marketType || Enhancer.getMarketType();
+  switch(mkt){
     case 'btc':
       return Enhancer.prices.btcUsd;
     case 'eth':
@@ -107,9 +114,8 @@ Enhancer.notifyBackground = function notifyBackground(){
     Enhancer.go();
   });
 }
-Enhancer.getMarketsTable = function getMarketsTable(){
-  const marketsTable = document.getElementsByTagName('table')[2]; 
-  return marketsTable;
+Enhancer.getMarketsTables = function getMarketsTables(){
+  return document.getElementsByTagName('table');
 }
 Enhancer.getOrderTables = function getOrderTables(){
   const buyOrdersTable = document.getElementById('buyOrdersTable');
@@ -132,12 +138,15 @@ Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
       let row = rows[i];
       if(i===0){
         const columns = row.getElementsByTagName('th');
-        updateHeader('enhanced-header-markets', columns[4]);
+        let mktType = Enhancer.getMarketType(columns[0].innerText);
+        updateHeader('enhanced-header-markets-'+mktType, columns[4]);
         continue;
       }
       // Volume -> USD
       const columns = row.getElementsByTagName('td');
-      updateColumn(columns[0].innerText+'-last-price', columns[4]);
+      updateColumn(columns[0].innerText+'-last-price', 
+                   columns[4], 
+                   Enhancer.getMarketType(columns[0].innerText));
     }
   }
 }
@@ -153,7 +162,9 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
       }
       // BTC Value + USD
       const columns = row.getElementsByTagName('td');
-      updateColumn(columns[2].innerText, columns[7]);
+      updateColumn(columns[2].innerText+'-price', 
+                   columns[7], 
+                   'btc');
     }
   }
 }
@@ -263,7 +274,8 @@ Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker){
   document.head.appendChild(script);
 }
 Enhancer.getTickerQP = function getTickerQP(){
-  return document.location.search.substring(1).split('&')[0].split('=')[1];
+  let qps = document.location.search.substring(1);
+  return qps.indexOf('MarketName') > -1 ? qps.split('&')[0].split('=')[1] : '';
 }
 Enhancer.swapCharts = function swapCharts(){
   const charts = document.querySelectorAll('.chart-wrapper');
@@ -296,33 +308,35 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
         if(opts.usdVal){
           Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){ 
-            const curPrice = Enhancer.getCurrentPrice();
             const orderTables = Enhancer.getOrderTables();
             Enhancer.enhanceOrderTable('buy', orderTables.buy); 
             Enhancer.enhanceOrderTable('sell', orderTables.sell);
             Enhancer.enhanceMarketHistoryTable(orderTables.history);
           }, 200);
-          if(marketType === 'eth'){
-            Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
-          } 
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
         }
       };
     case 'balance':
       return function (doc){
         if(opts.usdVal){
+          Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){
             const balanceTable = Enhancer.getBalanceTable();
             Enhancer.enhanceBalanceTable(balanceTable);
           }, 200);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
         }
       }
     case 'markets':
       return function (doc){
         if(opts.usdVal){
+          Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){
-            const btcMarketsTable = Enhancer.getMarketsTable();
-            Enhancer.enhanceMarketsTable(btcMarketsTable);
+            let tables = Enhancer.getMarketsTables();
+            Enhancer.enhanceMarketsTable(tables[2]);
+            Enhancer.enhanceMarketsTable(tables[3]);
           }, 200);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
         }
       }
     default:
