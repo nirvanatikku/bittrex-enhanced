@@ -11,7 +11,6 @@
   },
   "permissions": [
     "storage",
-    "tabs",
     "activeTab",
     "https://bittrex.com/*"
   ],
@@ -35,5 +34,6 @@
       "js": ["enhancer.js"],
       "css": ["enhanced-styles.css"]
     }
-  ]
+  ],
+  "content_security_policy": "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src https://s3.tradingview.com;"
 }

@@ -22,7 +22,7 @@ function updateHeader(headerId, col){
   const enhancedHeader = document.createElement('span');
   enhancedHeader.id = headerId;
   enhancedHeader.style.color = CONSTANTS.color;
-  enhancedHeader.innerHTML = ' (USD)';
+  enhancedHeader.innerText = ' (USD)';
   col.appendChild(enhancedHeader);
 }
 
@@ -36,11 +36,11 @@ function updateColumn(colId, col, marketType){
     newNode.style.color = CONSTANTS.color;
     newNode.style.marginLeft = '10px';
     newNode.className = rowId;
-    newNode.innerHTML = price;
+    newNode.innerText = price;
     col.appendChild(newNode);
   } else {
     for(var i=0; i<existingNodes.length; i++){
-      existingNodes[i].innerHTML = price;
+      existingNodes[i].innerText = price;
     }
   }
 }
