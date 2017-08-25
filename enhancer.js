@@ -1,5 +1,14 @@
 const CONSTANTS = {
-  color: '#0072ed'
+  color: '#0072ed',
+  tvTrexPrefix: 'BITTREX',
+  tvChartURL: '//s3.tradingview.com/tv.js',
+  btcEthTrexApiURL: 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH',
+  btcPriceDomExpr: '[data-bind="text:navigation.displayBitcoinUsd"]',
+  buyOrdersTableDomID: 'buyOrdersTable',
+  sellOrdersTableDomID: 'sellOrdersTable',
+  marketHistoryTableDomID: 'marketHistoryTable2',
+  balanceTableDomID: 'balanceTable',
+  tickerQueryParamName: 'MarketName'
 };
 Number.prototype.format = function(n, x) {
     var re = '\\d(?=(\\d{' + (x || 3) + '})+' + (n > 0 ? '\\.' : '$') + ')';
@@ -47,6 +56,7 @@ const Enhancer = {};
 Enhancer.marketType = null;
 Enhancer.opts = {
   tvChart: false,
+  tradingViewOpts: {},
   usdVal: false
 };
 Enhancer.prices = {
@@ -56,12 +66,12 @@ Enhancer.prices = {
 };
 Enhancer.interval = null;
 Enhancer.initBtcPrice = function initBtcPrice(){
-  const node = document.querySelectorAll('[data-bind="text:navigation.displayBitcoinUsd"]')[0];
+  const node = document.querySelectorAll(CONSTANTS.btcPriceDomExpr)[0];
   const btcUsdPrice = parseFloat(node.innerText.split('=')[1].replace('$', ''));
   return btcUsdPrice;
 }
 Enhancer.initEthPrice = function initEthPrice(){
-  const ethTickerURL = 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH';
+  const ethTickerURL = CONSTANTS.btcEthTrexApiURL;
   let xhr = new XMLHttpRequest();
   xhr.open('GET', ethTickerURL, false);
   xhr.send(null);
@@ -105,22 +115,13 @@ Enhancer.unload = function unload(){
     clearInterval(Enhancer.prices.interval);
   }
 }
-Enhancer.notifyBackground = function notifyBackground(){
-  chrome.runtime.sendMessage({
-    processing:true
-  }, function(settings){
-    if(settings.tvChart) Enhancer.opts.tvChart = settings.tvChart;
-    if(settings.usdVal) Enhancer.opts.usdVal = settings.usdVal;
-    Enhancer.go();
-  });
-}
 Enhancer.getMarketsTables = function getMarketsTables(){
   return document.getElementsByTagName('table');
 }
 Enhancer.getOrderTables = function getOrderTables(){
-  const buyOrdersTable = document.getElementById('buyOrdersTable');
-  const sellOrdersTable = document.getElementById('sellOrdersTable');
-  const historyTable = document.getElementById('marketHistoryTable2');
+  const buyOrdersTable = document.getElementById(CONSTANTS.buyOrdersTableDomID);
+  const sellOrdersTable = document.getElementById(CONSTANTS.sellOrdersTableDomID);
+  const historyTable = document.getElementById(CONSTANTS.marketHistoryTableDomID);
   return {
     buy: buyOrdersTable,
     sell: sellOrdersTable,
@@ -128,13 +129,13 @@ Enhancer.getOrderTables = function getOrderTables(){
   };
 }
 Enhancer.getBalanceTable = function getBalanceTable(){
-  const balanceTable = document.getElementById('balanceTable');
+  const balanceTable = document.getElementById(CONSTANTS.balanceTableDomID);
   return balanceTable;
 }
 Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length){
-    for(var i=0; i<rows.length; i++){
+    for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0){
         const columns = row.getElementsByTagName('th');
@@ -153,7 +154,7 @@ Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
 Enhancer.enhanceBalanceTable = function balanceTable(table){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length){
-    for(var i=0; i<rows.length; i++){
+    for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
         const columns = row.getElementsByTagName('th');
@@ -173,7 +174,7 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
   const marginProp = 'marginLeft';
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length){
-    for(var i=0; i<rows.length; i++){
+    for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
         const headerId = type+'-enhanced-header';
@@ -208,7 +209,7 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
         price.id = id;
         price.style.color = CONSTANTS.color;
         price.style[marginProp] = '10px'; 
-        price.innerHTML = curPrice;
+        price.innerText = curPrice;
         let n = columns[colIdx].childNodes[0];
         n.appendChild(price);
       }
@@ -218,7 +219,7 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
 Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length){
-    for(var i=0; i<rows.length; i++){
+    for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
         let columns = row.getElementsByTagName('th');
@@ -234,50 +235,31 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
     };
   }
 }
-Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker){
+Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker, tradingViewOpts){
   const script = document.createElement('script');
-  script.src = '//s3.tradingview.com/tv.js';
+  script.src = CONSTANTS.tvChartURL;
   script.async = true;
   script.addEventListener('load', function(){
-    let tradingViewOpts = {
-      symbol: ticker,
-      width: '100%',
-      height: 550,
-      interval: 30,
-      timezone: 'Etc/UTC',
-      theme: 'White',
-      style: 1,
-      locale: 'en',
-      toolbar_bg: '#f1f3f6',
-      enable_publishing: false,
-      withdateranges: true,
-      studies: [
-        // 'RSI@tv-basicstudies',
-        // 'MACD@tv-basicstudies'
-      ],
-      hide_side_toolbar: false,
-      show_popup_button: true,
-      popup_width: 1000,
-      popup_height: 650,
-      allow_symbol_change: true,
-      hideideas: true,
-      container_id: 'tv-chart-'+ticker
-    };
-    let insertTradingViewChartCode = ['new TradingView.widget('];
-    insertTradingViewChartCode.push(JSON.stringify(tradingViewOpts));
-    insertTradingViewChartCode.push(');');
+    let opts = {};
+    Object.assign(opts, 
+      tradingViewOpts, {
+        symbol: ticker,
+        container_id: 'tv-chart-'+Enhancer.getTickerQP()
+      });
+    console.log(opts);
+    let insertTradingViewChartCode = 'new TradingView.widget('+JSON.stringify(opts)+');';
     const chartScript = document.createElement('script');
     chartScript.type = 'text/javascript';
-    chartScript.innerText = insertTradingViewChartCode.join('');
+    chartScript.innerText = insertTradingViewChartCode;
     document.body.appendChild(chartScript);
   });
   document.head.appendChild(script);
 }
 Enhancer.getTickerQP = function getTickerQP(){
   let qps = document.location.search.substring(1);
-  return qps.indexOf('MarketName') > -1 ? qps.split('&')[0].split('=')[1] : '';
+  return qps.indexOf(CONSTANTS.tickerQueryParamName) > -1 ? qps.split('&')[0].split('=')[1] : '';
 }
-Enhancer.swapCharts = function swapCharts(){
+Enhancer.swapCharts = function swapCharts(tradingViewOpts){
   const charts = document.querySelectorAll('.chart-wrapper');
   if(charts.length === 2){ // timeline, orderbook
     // Clean
@@ -287,12 +269,12 @@ Enhancer.swapCharts = function swapCharts(){
     }
     let ticker = Enhancer.getTickerQP();
     let t = ticker.split('-');
-    ticker = 'BITTREX:'+t[1]+t[0]; // e.g. BTC-NEO => BITTREX:NEOBTC
+    let tradingViewTicker = CONSTANTS.tvTrexPrefix + ':' + t[1] + t[0]; // e.g. BTC-NEO => BITTREX:NEOBTC
     const newChartParent = document.createElement('div');
     newChartParent.id = "tv-chart-"+ticker;
     node.appendChild(newChartParent);
     // Load TV
-    Enhancer.initTradingViewWidget(ticker);
+    Enhancer.initTradingViewWidget(tradingViewTicker, tradingViewOpts);
   }
 }
 Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
@@ -302,8 +284,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
       return function(doc){
         if(opts.tvChart){
           setTimeout(function(){ 
-            Enhancer.swapCharts(); 
-          }, 1000);
+            Enhancer.swapCharts(opts.tradingViewOpts); 
+          }, 1200);
         }
         if(opts.usdVal){
           Enhancer.updatePrices();
@@ -355,7 +337,22 @@ Enhancer.go = function go(){
   }
   return Enhancer.getDataProcessors(type, Enhancer.opts)(document);
 }
-window.Enhancer = Enhancer;
+Enhancer.notifyBackground = function notifyBackground(){
+  chrome.runtime.sendMessage({
+    processing:true
+  }, function(settings){
+    if(settings.tvChart) {
+      Enhancer.opts.tvChart = settings.tvChart;
+    }
+    if(settings.usdVal) {
+      Enhancer.opts.usdVal = settings.usdVal;
+    }
+    if(settings.tradingViewOpts) {
+      Enhancer.opts.tradingViewOpts = settings.tradingViewOpts;
+    }
+    Enhancer.go();
+  });
+}
 
 whenReady(function(){
   Enhancer.notifyBackground();

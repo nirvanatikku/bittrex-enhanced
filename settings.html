@@ -1,21 +1,16 @@
-<html>
+<!DOCTYPE html>
 <head>
 <style>
-body { width:200px; height:100px; }
-body h1 { text-align: center; margin:0 auto; border-bottom:1px solid #eee; }
-button { border:0px ; width:100%; padding:10px 15px; background: #0072ed; color: white; text-align:left; cursor:pointer; }
-button[data-enabled=true] { color:white; }
-button[data-enabled=false] { background: #eee; color:#0072ed; }
-button[data-enabled=true] .enabled { display:none; }
-button[data-enabled=true] .disabled { display:block; }
-button[data-enabled=false] .enabled { display:block; }
-button[data-enabled=false] .disabled { display:none; }
+body{ width:225px; height:400px; padding:10px 5px; }
+body { width:95%; height:100%; }
 </style>
+<link href="settings.css" rel="stylesheet" />
 </head>
 <body>
 <h1><img src="icon128.png"/></h1>
 <h3>Settings</h3>
 <form onSubmit="return false;">
+    <h4>Global Options</h4>
     <div>
         <button id="configShowUsdVal" type="button" data-enabled="true">
             <span class="enabled">Show $USD Price</span>
@@ -27,8 +22,192 @@ button[data-enabled=false] .disabled { display:none; }
             <span class="enabled">Show TradingView Chart</span>
             <span class="disabled">Hide TradingView Chart</span>
         </button>
+        <div class="configTradingViewOpts sub-settings">
+            <h4>TradingView Chart Options</h4>
+            <div>
+                <label for="tvConfWidth">Width</label>
+                <input type="text" id="tvConfWidth" placeholder="width, e.g. 100%"/>
+            </div>
+            <div>
+                <label for="tvConfHeight">Height</label>
+                <input type="text" id="tvConfHeight" placeholder="height, e.g. 400"/>
+            </div>
+            <div>
+                <label for="tvConfInterval">Interval</label>
+                <select id="tvConfInterval" placeholder="interval, e.g. 30m">
+                    <option value="1">1m</option>
+                    <option value="3">3m</option>
+                    <option value="5">5m</option>
+                    <option value="15">15m</option>
+                    <option value="30">30m</option>
+                    <option value="60">1h</option>
+                    <option value="120">2h</option>
+                    <option value="180">3h</option>
+                    <option value="240">4h</option>
+                    <option value="D">D</option>
+                    <option value="W">W</option>
+                </select>
+            </div>
+            <div>
+                <label for="tvConfLocale">Language</label>
+                <select id="tvConfLocale" placeholder="locale, e.g. en">
+                    <option value="en">English</option>
+                    <option value="ru">Russian</option>
+                    <option value="zh">Chinese</option>
+                    <option value="tw">Chinese Taiwan</option>
+                    <option value="ja">Japanese</option>
+                    <option value="de">German</option>
+                    <option value="pt">Portuguese</option>
+                    <option value="it">Italian</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="vi">Vietnamese</option>
+                    <option value="he_IL">Hebrew Israel</option>
+                    <option value="fa">Farsi</option>
+                    <option value="cs">Czech</option>
+                    <option value="th">Thai</option>
+                    <option value="ko">Korean</option>
+                    <option value="tr">Turkish</option>
+                </select>
+            </div>
+            <div>
+                <label for="tvConfTimezone">Timezone</label>            
+                <select id="tvConfTimezone" placeholder="timezone, e.g. Etc/UTC">
+                    <option value="America/New_York">America/New_York</option>
+                    <option value="America/Los_Angeles">America/Los_Angeles</option>
+                    <option value="America/Chicago">America/Chicago</option>
+                    <option value="America/Phoenix">America/Phoenix</option>
+                    <option value="America/Toronto">America/Toronto</option>
+                    <option value="America/Vancouver">America/Vancouver</option>
+                    <option value="America/Argentina/Buenos_Aires">America/Argentina/Buenos_Aires</option>
+                    <option value="America/El_Salvador">America/El_Salvador</option>
+                    <option value="America/Sao_Paulo">America/Sao_Paulo</option>
+                    <option value="America/Bogota">America/Bogota</option>
+                    <option value="Europe/Moscow">Europe/Moscow</option>
+                    <option value="Europe/Athens">Europe/Athens</option>
+                    <option value="Europe/Berlin">Europe/Berlin</option>
+                    <option value="Europe/London">Europe/London</option>
+                    <option value="Europe/Madrid">Europe/Madrid</option>
+                    <option value="Europe/Paris">Europe/Paris</option>
+                    <option value="Europe/Warsaw">Europe/Warsaw</option>
+                    <option value="Australia/Sydney">Australia/Sydney</option>
+                    <option value="Australia/Brisbane">Australia/Brisbane</option>
+                    <option value="Australia/Adelaide">Australia/Adelaide</option>
+                    <option value="Australia/ACT">Australia/ACT</option>
+                    <option value="Asia/Almaty">Asia/Almaty</option>
+                    <option value="Asia/Ashkhabad">Asia/Ashkhabad</option>
+                    <option value="Asia/Tokyo">Asia/Tokyo</option>
+                    <option value="Asia/Taipei">Asia/Taipei</option>
+                    <option value="Asia/Singapore">Asia/Singapore</option>
+                    <option value="Asia/Shanghai">Asia/Shanghai</option>
+                    <option value="Asia/Seoul">Asia/Seoul</option>
+                    <option value="Asia/Tehran">Asia/Tehran</option>
+                    <option value="Asia/Dubai">Asia/Dubai</option>
+                    <option value="Asia/Kolkata">Asia/Kolkata</option>
+                    <option value="Asia/Hong_Kong">Asia/Hong_Kong</option>
+                    <option value="Asia/Bangkok">Asia/Bangkok</option>
+                    <option value="Pacific/Auckland">Pacific/Auckland</option>
+                    <option value="Pacific/Chatham">Pacific/Chatham</option>
+                    <option value="Pacific/Fakaofo">Pacific/Fakaofo</option>
+                    <option value="Pacific/Honolulu">Pacific/Honolulu</option>
+                </select>
+            </div>
+            <div class="hide"> <!-- not working... need to connect w/ TV -->
+                <label for="tvConfTheme">Theme</label>  
+                <select id="tvConfTheme" placeholder="theme, e.g. Light/Dark">
+                    <option value="Light">Light</option>
+                    <option value="Dark">Dark</option>
+                </select>
+            </div>
+            <div>
+                <label for="tvConfStyle">Style</label>  
+                <select id="tvConfStyle" placeholder="style, e.g. Candles (1)">
+                    <option value="0">Bars</option>
+                    <option value="1">Candles</option>
+                    <option value="2">Line</option>
+                    <option value="3">Area</option>
+                    <option value="4">Renko</option>
+                    <option value="5">Kagi</option>
+                    <option value="6">Point and Figure</option>
+                    <option value="7">Line Break</option>
+                    <option value="8">Heikin Ashi</option>
+                    <option value="9">Hollow Candles</option>
+                </select>
+            </div>
+            <div>
+                <!-- https://www.tradingview.com/wiki/Widget:TradingView_Widget -->
+                <label for="tvConfStudies">Studies</label>  
+                <select id="tvConfStudies" multiple="multiple" size="20">
+                    <option value='ACCD@tv-basicstudies'>Accumulation/Distribution</option>
+                    <option value='studyADR@tv-basicstudies'>ADR</option>
+                    <option value='AROON@tv-basicstudies'>Aroon</option>
+                    <option value='ATR@tv-basicstudies'>Average True Range</option>
+                    <option value='AwesomeOscillator@tv-basicstudies'>Awesome Oscillator</option>
+                    <option value='BB@tv-basicstudies'>Bollinger Bands</option>
+                    <option value='BollingerBandsR@tv-basicstudies'>Bollinger Bands %B</option>
+                    <option value='BollingerBandsWidth@tv-basicstudies'>Bollinger Bands Width</option>
+                    <option value='CMF@tv-basicstudies'>Chaikin Money Flow</option>
+                    <option value='ChaikinOscillator@tv-basicstudies'>Chaikin Oscillator</option>
+                    <option value='chandeMO@tv-basicstudies'>Chande Momentum Oscillator</option>
+                    <option value='ChoppinessIndex@tv-basicstudies'>Choppiness Index</option>
+                    <option value='CCI@tv-basicstudies'>Commodity Channel Index</option>
+                    <option value='CRSI@tv-basicstudies'>ConnorsRSI</option>
+                    <option value='CorrelationCoefficient@tv-basicstudies'>Correlation Coefficient</option>
+                    <option value='DetrendedPriceOscillator@tv-basicstudies'>Detrended Price Oscillator</option>
+                    <option value='DM@tv-basicstudies'>Directional Movement</option>
+                    <option value='DONCH@tv-basicstudies'>Donchian Channels</option>
+                    <option value='DoubleEMA@tv-basicstudies'>Double EMA</option>
+                    <option value='EaseOfMovement@tv-basicstudies'>Ease Of Movement</option>
+                    <option value='EFI@tv-basicstudies'>Elder's Force Index</option>
+                    <option value='ElliottWave@tv-basicstudies'>Elliott Wave</option>
+                    <option value='ENV@tv-basicstudies'>Envelope</option>
+                    <option value='FisherTransform@tv-basicstudies'>Fisher Transform</option>
+                    <option value='HV@tv-basicstudies'>Historical Volatility</option>
+                    <option value='hullMA@tv-basicstudies'>Hull Moving Average</option>
+                    <option value='IchimokuCloud@tv-basicstudies'>Ichimoku Cloud</option>
+                    <option value='KLTNR@tv-basicstudies'>Keltner Channels</option>
+                    <option value='KST@tv-basicstudies'>Know Sure Thing</option>
+                    <option value='LinearRegression@tv-basicstudies'>Linear Regression</option>
+                    <option value='MACD@tv-basicstudies'>MACD</option>
+                    <option value='MOM@tv-basicstudies'>Momentum</option>
+                    <option value='MF@tv-basicstudies'>Money Flow</option>
+                    <option value='MoonPhases@tv-basicstudies'>Moon Phases</option>
+                    <option value='MASimple@tv-basicstudies'>Moving Average</option>
+                    <option value='MAExp@tv-basicstudies'>Moving Average Exponentional</option>
+                    <option value='MAWeighted@tv-basicstudies'>Moving Average Weighted</option>
+                    <option value='OBV@tv-basicstudies'>On Balance Volume</option>
+                    <option value='PSAR@tv-basicstudies'>Parabolic SAR</option>
+                    <option value='PivotPointsHighLow@tv-basicstudies'>Pivot Points High Low</option>
+                    <option value='PivotPointsStandard@tv-basicstudies'>Pivot Points Standard</option>
+                    <option value='PriceOsc@tv-basicstudies'>Price Oscillator</option>
+                    <option value='PriceVolumeTrend@tv-basicstudies'>Price Volume Trend</option>
+                    <option value='ROC@tv-basicstudies'>Rate Of Change</option>
+                    <option value='RSI@tv-basicstudies'>Relative Strength Index</option>
+                    <option value='VigorIndex@tv-basicstudies'>Relative Vigor Index</option>
+                    <option value='VolatilityIndex@tv-basicstudies'>Relative Volatility Index</option>
+                    <option value='SMIErgodicIndicator@tv-basicstudies'>SMI Ergodic Indicator</option>
+                    <option value='SMIErgodicOscillator@tv-basicstudies'>SMI Ergodic Oscillator</option>
+                    <option value='Stochastic@tv-basicstudies'>Stochastic</option>
+                    <option value='StochasticRSI@tv-basicstudies'>Stochastic RSI</option>
+                    <option value='TripleEMA@tv-basicstudies'>Triple EMA</option>
+                    <option value='Trix@tv-basicstudies'>TRIX</option>
+                    <option value='UltimateOsc@tv-basicstudies'>Ultimate Oscillator</option>
+                    <option value='VSTOP@tv-basicstudies'>Volatility Stop</option>
+                    <option value='Volume@tv-basicstudies'>Volume</option>
+                    <option value='VWAP@tv-basicstudies'>VWAP</option>
+                    <option value='MAVolumeWeighted@tv-basicstudies'>VWMA</option>
+                    <option value='WilliamR@tv-basicstudies'>Williams %R</option>
+                    <option value='WilliamsAlligator@tv-basicstudies'>Williams Alligator</option>
+                    <option value='WilliamsFractal@tv-basicstudies'>Williams Fractal</option>
+                    <option value='ZigZag@tv-basicstudies'>Zig Zag</option>
+                </select>
+            </div>
+        </div>
     </div>
 </form>
+<br/>
+<small>Note: refresh after changing settings to apply to existing page.</small>
+<br/>
 <script src="settings.js"></script>
 </body>
 </html>
