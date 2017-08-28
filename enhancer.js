@@ -329,13 +329,13 @@ Enhancer.go = function go(){
   const path = window.location.pathname.toLowerCase();
   let type = null;
   switch(path){
-    case '/':
     case '/market/index':
       type = 'market';
       break;
     case '/balance':
       type = 'balance';
       break;
+    case '/':
     case '/home/markets':
       type = 'markets';
       break;
