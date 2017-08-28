@@ -15,22 +15,30 @@ Number.prototype.format = function(n, x) {
     return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,');
 };
 
-function updateHeader(headerId, col){
+function updateHeader(headerId, col, text){
   if(document.getElementById(headerId)){
     return;
+  }
+  if(!text){
+    text = ' (USD)';
   }
   const enhancedHeader = document.createElement('span');
   enhancedHeader.id = headerId;
   enhancedHeader.style.color = CONSTANTS.color;
-  enhancedHeader.innerText = ' (USD)';
+  enhancedHeader.innerText = text;
   col.appendChild(enhancedHeader);
 }
 
-function updateColumn(colId, col, marketType){
+function getPriceFromNode(marketType, col){
+  let ret = parseFloat(col.childNodes.length > 0 ? col.childNodes[0].textContent : col.innerText);
+  return '$' + (Enhancer.getCurrentPrice(marketType) * ret).format(2);
+}
+
+function updateColumn(colId, col, marketType, value){
   let rowId = 'enhanced-val-'+colId.replace(/\./g, '-');
   let existingNodes = document.querySelectorAll('.'+rowId);
-  const btcVal = parseFloat(col.childNodes.length > 0 ? col.childNodes[0].textContent : col.innerText);
-  let price = '$' + (Enhancer.getCurrentPrice(marketType) * btcVal).format(2);
+  const price = typeof(value) === 'undefined' ? getPriceFromNode(marketType, col) 
+                                              : value;
   if(existingNodes.length === 0){
     const newNode = document.createElement('span');
     newNode.style.color = CONSTANTS.color;
@@ -158,12 +166,21 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
       let row = rows[i];
       if(i===0) {
         const columns = row.getElementsByTagName('th');
-        updateHeader('enhanced-header-balance', columns[7]);
+        updateHeader('enhanced-header-balance-est-price', columns[2], ' (Est. BTC)')
+        updateHeader('enhanced-header-balance-btc-price', columns[7]);
         continue;
       }
       // BTC Value + USD
       const columns = row.getElementsByTagName('td');
-      updateColumn(columns[2].innerText+'-price', 
+      const estBtcPrice = parseFloat(columns[7].innerText) / parseFloat(columns[3].innerText);
+      let tkn = columns[1].innerText.replace(/\s+/g, '').toLowerCase();
+      if(tkn !== 'bitcoin'){
+        updateColumn(tkn+'-est-price',
+                    columns[2],
+                    'btc',
+                    estBtcPrice.format(8));
+      }
+      updateColumn(columns[2].innerText+'-btc-price', 
                    columns[7], 
                    'btc');
     }
