@@ -326,14 +326,19 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
   } 
 };
 Enhancer.go = function go(){
-  const url = window.location.href.toLowerCase();
+  const path = window.location.pathname.toLowerCase();
   let type = null;
-  if(url.indexOf('/market/') > -1){
-    type = 'market';
-  } else if (url.indexOf('/balance') > -1){
-    type = 'balance';
-  } else if (url.indexOf('/home/markets') > -1){
-    type = 'markets';
+  switch(path){
+    case '/':
+    case '/market/index':
+      type = 'market';
+      break;
+    case '/balance':
+      type = 'balance';
+      break;
+    case '/home/markets':
+      type = 'markets';
+      break;
   }
   return Enhancer.getDataProcessors(type, Enhancer.opts)(document);
 }
