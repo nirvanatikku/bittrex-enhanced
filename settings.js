@@ -9,7 +9,8 @@ function getConfigNodes(){ // buttons
         'tvConfTheme',
         'tvConfLocale',
         'tvConfStudies',
-        'tvConfStyle'
+        'tvConfStyle',
+        'tvConfHide_side_toolbar'
     ];
     let configTradingViewOpts = {};
     configTradingViewOptsElmIds.forEach(function(elmId){
@@ -39,11 +40,12 @@ function updateConfigTvObj(prop){
         let data = {};
         let tgt = evt.target;
         let isSelect = tgt.nodeName === 'SELECT';
+        let isCheckbox = tgt.nodeName === 'INPUT' && tgt.type === 'checkbox';
         let val = isSelect ? Array.prototype.slice.call(tgt.options).map(function(opt){
                                                   if(opt.selected) return opt.value;
                                               }) : tgt.value;
-        if(tgt.nodeName === 'SELECT'){
-            val = val.filter(function(n){ return n != undefined })
+        if(isSelect){
+            val = val.filter(function(n){ return n != undefined });
             if(tgt.getAttribute('multiple') !== 'multiple'){
                 if(val.length > 0){
                     val = val[0];
@@ -52,8 +54,22 @@ function updateConfigTvObj(prop){
         }
         chrome.storage.sync.get('bittrex-enhanced-tvChartOpts', function(data){
             let opts = data['bittrex-enhanced-tvChartOpts']; 
+            if(isCheckbox){
+                val = tgt.checked;
+                if(tgt.id === 'tvConfHide_side_toolbar'){
+                    val = !val; // inverse UX
+                    // ensure that height > 550 if enabled..
+                    if(val && opts.height < 550){
+                        opts.height = 550;
+                        let node = getConfigNodes().tvChartOpts.tvConfHeight;
+                        node.value = opts.height;
+                    }
+                }
+            }
             opts[prop] = val;
-            chrome.storage.sync.set({'bittrex-enhanced-tvChartOpts': opts});
+            chrome.storage.sync.set({
+                'bittrex-enhanced-tvChartOpts': opts
+            });
         });
     };
 }
@@ -82,6 +98,10 @@ function initConfigText(prop, node, val){
     node.value = val;
     node.onblur = updateConfigTvObj(prop);
 }
+function initConfigBoolean(prop, node, val){
+    node.checked = val == true; // purposefully ==
+    node.onclick = updateConfigTvObj(prop);
+}
 function initConfig(configNodes){
     chrome.storage.sync.get([
         'bittrex-enhanced-usdVal',
@@ -104,6 +124,7 @@ function initConfigTradingViewOpts(nodes){
         initConfigDropdown('style', nodes.tvConfStyle, data.style);
         initConfigDropdown('locale', nodes.tvConfLocale, data.locale);
         initConfigMultiselect('studies', nodes.tvConfStudies, data.studies);
+        initConfigBoolean('hide_side_toolbar', nodes.tvConfHide_side_toolbar, !data.hide_side_toolbar);
     });
 }
 function initForm(){
