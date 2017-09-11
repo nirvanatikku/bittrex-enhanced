@@ -6,7 +6,7 @@ const INITED = '✓';
 const NOTINITED = '×';
 const TRADING_VIEW_DEFAULT_OPTIONS = {
     width: '100%',
-    height: 400,
+    height: 550,
     interval: 30,
     timezone: 'America/New_York',
     theme: 'Light',

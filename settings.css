@@ -12,7 +12,9 @@ button[data-enabled=false] .disabled { display:none; }
 button[data-enabled=true] + .sub-settings { display:block; }
 button[data-enabled=false] + .sub-settings { display:none; }
 input, select { padding: 3px 6px; width:100%; }
+input[type=checkbox] { display:inline-block; width:auto; }
 small { display:block; color: #999; text-align:center; width: 100%; }
 label { display:block; padding-top:3px; }
 button:focus, textarea:focus, input:focus{ outline: none; }
 .hide { display:none; }
+.padded { padding:5px 0px; }
