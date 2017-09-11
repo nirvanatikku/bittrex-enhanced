@@ -36,7 +36,6 @@ chrome.runtime.onMessage.addListener(
                 'bittrex-enhanced-usdVal', 
                 'bittrex-enhanced-tvChartOpts'
             ], function(data) {
-                console.log(data);
                 settings.tvChart = data['bittrex-enhanced-tvChart'];
                 settings.usdVal = data['bittrex-enhanced-usdVal'];
                 settings.tradingViewOpts = data['bittrex-enhanced-tvChartOpts'] || {};
