@@ -5,6 +5,7 @@ const CONSTANTS = {
   tvChartURL: '//s3.tradingview.com/tv.js',
   btcEthTrexApiURL: 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH',
   btcPriceDomExpr: '[data-bind="text:navigation.displayBitcoinUsd"]',
+  loginNodeExpr: ".fa-sign-in",
   buyOrdersTableDomID: 'buyOrdersTable',
   sellOrdersTableDomID: 'sellOrdersTable',
   marketHistoryTableDomID: 'marketHistoryTable2',
@@ -194,7 +195,8 @@ Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
       // Volume -> USD
       let columns = row.getElementsByTagName('td');
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdPrice);
-      updateColumn(CONSTANTS.classes.estUsdPrice, row, alreadyInserted ? 5 : 4, Enhancer.getMarketType(columns[0].innerText));
+      let priceColIdx = alreadyInserted ? 5 : 4;
+      updateColumn(CONSTANTS.classes.estUsdPrice, row, priceColIdx, Enhancer.getMarketType(columns[0].innerText));
     }
   }
 }
@@ -240,7 +242,10 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
     let priceColIdx = type === 'buy' ? 4 : 1;
     let title = type === 'buy' ? 'BID' : 'ASK';
     let isUsdtMarket = Enhancer.getMarketType() === 'usdt';
-    // TODO: adjust if signed in or not
+    let isLoggedIn = document.querySelectorAll(CONSTANTS.loginNodeExpr).length === 0;
+    if(!isLoggedIn){
+      priceColIdx -=1;
+    }
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
@@ -267,7 +272,7 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
         updateHeader(CONSTANTS.classes.mktHistoryTotalUsdVal, row, 5, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
-      let alreadyInserted = getChildNodeWithClass(row, "mkt-hist-usd-price");
+      let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.mktHistoryUsdPrice);
       let priceIdx = 2;
       let totalIdx = 5;
       if(alreadyInserted){
@@ -275,7 +280,7 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
         totalIdx += 1;
       }
       updateColumn(CONSTANTS.classes.mktHistoryUsdPrice, row, priceIdx);
-      updateColumn(CONSTANTS.classes.nktHistoryUsdTotal, row, totalIdx);
+      updateColumn(CONSTANTS.classes.mktHistoryUsdTotal, row, totalIdx);
     };
   }
 }
