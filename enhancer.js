@@ -11,9 +11,14 @@ const CONSTANTS = {
   balanceTableDomID: 'balanceTable',
   tickerQueryParamName: 'MarketName',
   classes: {
+    estPrice: 'est-price',
     estUsdPrice: 'est-usd-price',
     estBtcPrice: 'est-btc-price',
-    estUsdValue: 'est-usd-value'
+    estUsdValue: 'est-usd-value',
+    mktHistoryBidAskUsdVal: 'mkt-history-bid-usd-val',
+    mktHistoryTotalUsdVal: 'mkt-history-total-usd-val',
+    mktHistoryUsdPrice: 'mkt-hist-usd-price',
+    mktHistoryUsdTotal: 'mkt-hist-usd-total'
   }
 };
 
@@ -23,7 +28,7 @@ Number.prototype.format = function(n, x) {
 };
 
 function getPriceFromNode(marketType, col){
-  let nodePrice = parseFloat(col.innerText); // col.childNodes.length > 0 ? col.childNodes[0].textContent : 
+  let nodePrice = parseFloat(col.innerText); 
   let isUsdtMarket = marketType === 'usdt';
   let currencySymbol = isUsdtMarket ? 'Ƀ' : '$';
   let formatDp = isUsdtMarket ? 8 : 2;
@@ -242,12 +247,12 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
         updateHeader('est-price-' + type, row, priceColIdx, title + ' (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
-      let alreadyInserted = getChildNodeWithClass(row, "est-price");
+      let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estPrice);
       let priceIdx = priceColIdx;
       if(alreadyInserted){
         priceIdx += type === 'buy' ? 1 : 1;
       }
-      updateColumn("est-price", row, priceIdx);
+      updateColumn(CONSTANTS.classes.estPrice, row, priceIdx);
     };
   }
 }
@@ -258,8 +263,8 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
       let row = rows[i];
       let isUsdtMarket = Enhancer.getMarketType() === 'usdt';
       if(i===0) {
-        updateHeader("mkt-history-bid-usd-val", row, 2, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
-        updateHeader("mkt-history-total-usd-val", row, 5, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
+        updateHeader(CONSTANTS.classes.mktHistoryBidAskUsdVal, row, 2, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
+        updateHeader(CONSTANTS.classes.mktHistoryTotalUsdVal, row, 5, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
       let alreadyInserted = getChildNodeWithClass(row, "mkt-hist-usd-price");
@@ -269,8 +274,8 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
         priceIdx += 1;
         totalIdx += 1;
       }
-      updateColumn("mkt-hist-usd-price", row, priceIdx);
-      updateColumn("mkt-hist-usd-total", row, totalIdx);
+      updateColumn(CONSTANTS.classes.mktHistoryUsdPrice, row, priceIdx);
+      updateColumn(CONSTANTS.classes.nktHistoryUsdTotal, row, totalIdx);
     };
   }
 }
