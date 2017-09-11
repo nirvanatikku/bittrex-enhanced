@@ -2,3 +2,28 @@
 .table td {
 	border: 0px !important;
 }
+#pad-wrapper h4 { 
+    text-decoration: none !important; 
+    font-style: normal !important; 
+}
+* {
+    border-radius: 0px !important;
+}
+.table td.est-usd-price,
+.table td.est-btc-price,
+.table td.est-usd-value,
+.table td.mkt-hist-usd-price,
+.table td.mkt-hist-usd-total,
+.table td.est-price {
+    text-align:right;
+}
+#est-price-BTC,
+#est-price-ETH,
+#est-btc-price,
+#est-usd-value,
+#est-price-buy,
+#est-price-sell,
+#mkt-history-bid-usd-val,
+#mkt-history-total-usd-val { 
+    text-align:center; 
+}

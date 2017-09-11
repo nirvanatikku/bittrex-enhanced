@@ -1,5 +1,6 @@
 const CONSTANTS = {
   color: '#0072ed',
+  colMinWidth: '100px',
   tvTrexPrefix: 'BITTREX',
   tvChartURL: '//s3.tradingview.com/tv.js',
   btcEthTrexApiURL: 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH',
@@ -8,7 +9,12 @@ const CONSTANTS = {
   sellOrdersTableDomID: 'sellOrdersTable',
   marketHistoryTableDomID: 'marketHistoryTable2',
   balanceTableDomID: 'balanceTable',
-  tickerQueryParamName: 'MarketName'
+  tickerQueryParamName: 'MarketName',
+  classes: {
+    estUsdPrice: 'est-usd-price',
+    estBtcPrice: 'est-btc-price',
+    estUsdValue: 'est-usd-value'
+  }
 };
 
 Number.prototype.format = function(n, x) {
@@ -16,41 +22,67 @@ Number.prototype.format = function(n, x) {
     return this.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, 'g'), '$&,');
 };
 
-function updateHeader(headerId, col, text){
+function getPriceFromNode(marketType, col){
+  let nodePrice = parseFloat(col.innerText); // col.childNodes.length > 0 ? col.childNodes[0].textContent : 
+  let isUsdtMarket = marketType === 'usdt';
+  let currencySymbol = isUsdtMarket ? 'Ƀ' : '$';
+  let formatDp = isUsdtMarket ? 8 : 2;
+  let curPrice = Enhancer.getCurrentPrice(marketType);
+  let price = isUsdtMarket ? nodePrice/curPrice : curPrice*nodePrice;
+  return currencySymbol + price.format(formatDp);
+}
+
+function getChildNodeWithClass(node, clz){
+  let ret;
+  for(var i=0; i<node.childNodes.length; i++) {
+    if(node.childNodes[i].className === clz) {
+      ret = node.childNodes[i];
+      break;
+    }        
+  }
+  return ret;
+}
+
+function updateHeader(headerId, row, colIdx, text){
   if(document.getElementById(headerId)){
     return;
   }
-  if(!text){
-    text = ' (USD)';
-  }
-  const enhancedHeader = document.createElement('span');
+  let headers = row.getElementsByTagName('th');
+  let headerCol = headers[colIdx];
+  let nodeToInsertBefore = colIdx+1 > headers.length ? -1 : headers[colIdx+1];
+  text = text || ' (' + (Enhancer.getMarketType() === 'usdt' ? 'Est. BTC' : 'Est. USD') + ')';
+  const enhancedHeader = document.createElement('th');
   enhancedHeader.id = headerId;
   enhancedHeader.style.color = CONSTANTS.color;
   enhancedHeader.innerText = text;
-  col.appendChild(enhancedHeader);
-}
-
-function getPriceFromNode(marketType, col){
-  let ret = parseFloat(col.childNodes.length > 0 ? col.childNodes[0].textContent : col.innerText);
-  return '$' + (Enhancer.getCurrentPrice(marketType) * ret).format(2);
-}
-
-function updateColumn(colId, col, marketType, value){
-  let rowId = 'enhanced-val-'+colId.replace(/\./g, '-');
-  let existingNodes = document.querySelectorAll('.'+rowId);
-  const price = typeof(value) === 'undefined' ? getPriceFromNode(marketType, col) 
-                                              : value;
-  if(existingNodes.length === 0){
-    const newNode = document.createElement('span');
-    newNode.style.color = CONSTANTS.color;
-    newNode.style.marginLeft = '10px';
-    newNode.className = rowId;
-    newNode.innerText = price;
-    col.appendChild(newNode);
+  if(nodeToInsertBefore === -1){
+    row.appendChild(enhancedHeader);
   } else {
-    for(var i=0; i<existingNodes.length; i++){
-      existingNodes[i].innerText = price;
+    row.insertBefore(enhancedHeader, headerCol);
+  }
+}
+
+function updateColumn(colClass, row, priceColIdx, marketType, priceVal){
+  let cols = row.getElementsByTagName('td');
+  let priceNode = cols[priceColIdx];
+  marketType = marketType || Enhancer.getMarketType();
+  const price = typeof(priceVal) !== 'undefined' ? priceVal : getPriceFromNode(marketType, priceNode);
+  let existingNode = getChildNodeWithClass(row, colClass);
+  if(!existingNode){
+    const newNode = document.createElement('td');
+    newNode.style.color = CONSTANTS.color;
+    newNode.style.minWidth = CONSTANTS.colMinWidth;
+    newNode.style.marginLeft = '10px';
+    newNode.className = colClass;
+    newNode.innerText = price;
+    let nodeToInsertBefore = priceColIdx + 1 > cols.length ? -1 : cols[priceColIdx+1];
+    if(nodeToInsertBefore === -1){
+      row.appendChild(newNode);
+    } else {
+      row.insertBefore(newNode, priceNode);
     }
+  } else {
+    existingNode.innerText = price;
   }
 }
 
@@ -102,12 +134,14 @@ Enhancer.getMarketType = function getMarketType(mktType){
     mkt = mktType.split('-')[0].toLowerCase();
   }
   return Enhancer.marketType = (mkt === 'btc' ? 'btc' : 
-                               (mkt === 'eth' ? 'eth' : ''));
+                               (mkt === 'eth' ? 'eth' : 
+                               (mkt === 'usdt' ? 'usdt' : '')));
 }
 Enhancer.getCurrentPrice = function getCurrentPrice(marketType){
   let mkt = marketType || Enhancer.getMarketType();
   switch(mkt){
     case 'btc':
+    case 'usdt':
       return Enhancer.prices.btcUsd;
     case 'eth':
       let ethBtc = Enhancer.prices.ethBtc;
@@ -143,113 +177,100 @@ Enhancer.getBalanceTable = function getBalanceTable(){
 }
 Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
   const rows = table.getElementsByTagName('tr');
-  if(rows && rows.length){
+  if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0){
-        const columns = row.getElementsByTagName('th');
-        let mktType = Enhancer.getMarketType(columns[0].innerText);
-        updateHeader('enhanced-header-markets-'+mktType, columns[4]);
+        let columns = row.getElementsByTagName('th');
+        let mktType = rows[1].getElementsByTagName('td')[0].innerText.split('-')[0];
+        updateHeader("est-price-"+mktType, row, 4, "Est. USD");
         continue;
       }
       // Volume -> USD
-      const columns = row.getElementsByTagName('td');
-      updateColumn(columns[0].innerText+'-last-price', 
-                   columns[4], 
-                   Enhancer.getMarketType(columns[0].innerText));
+      let columns = row.getElementsByTagName('td');
+      let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdPrice);
+      updateColumn(CONSTANTS.classes.estUsdPrice, row, alreadyInserted ? 5 : 4, Enhancer.getMarketType(columns[0].innerText));
     }
   }
 }
 Enhancer.enhanceBalanceTable = function balanceTable(table){
   const rows = table.getElementsByTagName('tr');
-  if(rows && rows.length){
+  if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
-        const columns = row.getElementsByTagName('th');
-        updateHeader('enhanced-header-balance-est-price', columns[2], ' (Est. BTC)')
-        updateHeader('enhanced-header-balance-btc-price', columns[7]);
+        updateHeader(CONSTANTS.classes.estUsdPrice, row, 3, 'Est. USD');
+        updateHeader(CONSTANTS.classes.estBtcPrice, row, 4, 'Est. BTC');
+        updateHeader(CONSTANTS.classes.estUsdValue, row, 10, 'Est. USD Value');
         continue;
       }
       // BTC Value + USD
+      let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdValue);
+      let priceIdx = 7;
+      if(alreadyInserted){
+        priceIdx += 2;
+      }
+      let totalIdx = priceIdx-1;
       const columns = row.getElementsByTagName('td');
-      const estBtcPrice = parseFloat(columns[7].innerText) / parseFloat(columns[3].innerText);
+
+      const estBtcPrice = parseFloat(columns[priceIdx].innerText) / parseFloat(columns[totalIdx].innerText);
+      const estUsdPrice = estBtcPrice * Enhancer.prices.btcUsd;
       let tkn = columns[1].innerText.replace(/\s+/g, '').toLowerCase();
       if(tkn !== 'bitcoin'){
-        updateColumn(tkn+'-est-price',
-                    columns[2],
-                    'btc',
-                    estBtcPrice.format(8));
+        updateColumn(CONSTANTS.classes.estUsdPrice, row, 3, 'fiat', '$' + estUsdPrice.format(2));
+        updateColumn(CONSTANTS.classes.estBtcPrice, row, 4, 'btc', 'Ƀ' + estBtcPrice.format(8));
+      } else {
+        updateColumn(CONSTANTS.classes.estUsdPrice, row, 3, 'fiat', "-");
+        updateColumn(CONSTANTS.classes.estBtcPrice, row, 4, 'btc', "-");
       }
-      updateColumn(columns[2].innerText+'-btc-price', 
-                   columns[7], 
-                   'btc');
+
+      const estUsdValue = parseFloat(columns[priceIdx].innerText) * Enhancer.prices.btcUsd;
+      updateColumn(CONSTANTS.classes.estUsdValue, row, 10, 'fiat', '$'+estUsdValue.format(2));
     }
   }
 }
 Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
-  let colIdx = type === 'buy' ? 4 : 1;
-  const marginProp = 'marginLeft';
   const rows = table.getElementsByTagName('tr');
-  if(rows && rows.length){
+  if(rows && rows.length > 1){
+    let priceColIdx = type === 'buy' ? 4 : 1;
+    let title = type === 'buy' ? 'BID' : 'ASK';
+    let isUsdtMarket = Enhancer.getMarketType() === 'usdt';
+    // TODO: adjust if signed in or not
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
       if(i===0) {
-        const headerId = type+'-enhanced-header';
-        let columns = row.getElementsByTagName('th');
-        if(columns.length === 4){
-          colIdx -= 1;
-        }
-        const existingHeader = document.getElementById(headerId);
-        if(!existingHeader) {
-          const headerCol = columns[colIdx];
-          const enhancedHeader = document.createElement('span');
-          enhancedHeader.id = headerId;
-          enhancedHeader.style.color = CONSTANTS.color;
-          enhancedHeader.innerHTML = '(USD)';
-          headerCol.appendChild(enhancedHeader);
-        }
+        updateHeader('est-price-' + type, row, priceColIdx, title + ' (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
-      let columns = row.getElementsByTagName('td');
-      const btcPrice = parseFloat(columns[colIdx].innerText);
-      let p = Enhancer.getCurrentPrice() * btcPrice;
-      if(isNaN(p)){
-        continue;
+      let alreadyInserted = getChildNodeWithClass(row, "est-price");
+      let priceIdx = priceColIdx;
+      if(alreadyInserted){
+        priceIdx += type === 'buy' ? 1 : 1;
       }
-      const curPrice = '$' + p.format(2);
-      let id = type+'-row-'+btcPrice;
-      const existingNode = document.getElementById(id);
-      if(existingNode){
-        existingNode.innertHTML = curPrice;
-      } else {
-        var price = document.createElement('span');
-        price.id = id;
-        price.style.color = CONSTANTS.color;
-        price.style[marginProp] = '10px'; 
-        price.innerText = curPrice;
-        let n = columns[colIdx].childNodes[0];
-        n.appendChild(price);
-      }
+      updateColumn("est-price", row, priceIdx);
     };
   }
 }
 Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
   const rows = table.getElementsByTagName('tr');
-  if(rows && rows.length){
+  if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
+      let isUsdtMarket = Enhancer.getMarketType() === 'usdt';
       if(i===0) {
-        let columns = row.getElementsByTagName('th');
-        updateHeader('market-history-bid-enhanced-header', columns[2]);
-        updateHeader('market-history-total-enhanced-header', columns[4]);
+        updateHeader("mkt-history-bid-usd-val", row, 2, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
+        updateHeader("mkt-history-total-usd-val", row, 5, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
-      let columns = row.getElementsByTagName('td');
-      const btcPrice = parseFloat(columns[4].innerText);
-      let id = 'history-row-'+btcPrice;
-      updateColumn(id+'-bid', columns[2]);
-      updateColumn(id+'-total', columns[4]);
+      let alreadyInserted = getChildNodeWithClass(row, "mkt-hist-usd-price");
+      let priceIdx = 2;
+      let totalIdx = 5;
+      if(alreadyInserted){
+        priceIdx += 1;
+        totalIdx += 1;
+      }
+      updateColumn("mkt-hist-usd-price", row, priceIdx);
+      updateColumn("mkt-hist-usd-total", row, totalIdx);
     };
   }
 }
@@ -306,12 +327,15 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
           }, 1200);
         }
         if(opts.usdVal){
+          const marketQp = Enhancer.getTickerQP();
           Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){ 
             const orderTables = Enhancer.getOrderTables();
             Enhancer.enhanceOrderTable('buy', orderTables.buy); 
             Enhancer.enhanceOrderTable('sell', orderTables.sell);
-            Enhancer.enhanceMarketHistoryTable(orderTables.history);
+            if(marketQp.toLowerCase() !== 'usdt-btc'){
+              Enhancer.enhanceMarketHistoryTable(orderTables.history);
+            }
           }, 200);
           Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
         }

@@ -26,6 +26,7 @@
       "matches": [
         "https://bittrex.com/Market/Index?MarketName=BTC-*",
         "https://bittrex.com/Market/Index?MarketName=ETH-*",
+        "https://bittrex.com/Market/Index?MarketName=USDT-*",
         "https://bittrex.com/Balance",
         "https://bittrex.com/home/markets*",
         "https://bittrex.com/Home/Markets*",
