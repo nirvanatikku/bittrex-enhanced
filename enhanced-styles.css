@@ -10,7 +10,6 @@
     border-radius: 0px !important;
 }
 .table td.est-usd-price,
-.table td.est-btc-price,
 .table td.est-usd-value,
 .table td.mkt-hist-usd-price,
 .table td.mkt-hist-usd-total,
@@ -21,9 +20,12 @@
 #est-price-ETH,
 #est-btc-price,
 #est-usd-value,
+#est-usd-price,
 #est-price-buy,
 #est-price-sell,
 #mkt-history-bid-usd-val,
-#mkt-history-total-usd-val { 
+#mkt-history-total-usd-val,
+.table td.est-btc-price
+{ 
     text-align:center; 
 }
