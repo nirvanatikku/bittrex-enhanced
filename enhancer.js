@@ -354,6 +354,9 @@ Enhancer.enhanceOpenOrdersTable = function enhanceOpenOrdersTable(table){
         updateHeader(CONSTANTS.classes.openOrdersTotalUsdVal, row, totalIdx, 'TOTAL (Est. USD)');
         continue;
       }
+      if(row.getElementsByTagName("td").length===1){
+        break;
+      }
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.openOrdersUsdPrice);
       if(alreadyInserted){
         priceIdx += 1;
