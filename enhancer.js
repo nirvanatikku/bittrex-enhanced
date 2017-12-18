@@ -129,6 +129,7 @@ function whenReady(callback) {
 //
 // 
 const Enhancer = {};
+Enhancer.pageType = null;
 Enhancer.marketType = null;
 Enhancer.opts = {
   tvChart: false,
@@ -154,7 +155,11 @@ Enhancer.initEthPrice = function initEthPrice(){
   return JSON.parse(xhr.responseText).result.Last;
 }
 Enhancer.updatePrices = function updatePrices(){
-  Enhancer.prices.ethBtc = Enhancer.initEthPrice();
+  if(Enhancer.pageType === 'markets' 
+    || Enhancer.pageType === 'history'
+    || Enhancer.marketType === 'eth'){
+    Enhancer.prices.ethBtc = Enhancer.initEthPrice();
+  }
   Enhancer.prices.btcUsd = Enhancer.initBtcPrice();
 }
 Enhancer.getMarketType = function getMarketType(mktType){
@@ -481,7 +486,10 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
       return function(doc){}
   } 
 };
-Enhancer.go = function go(){
+Enhancer.getPageType = function getPageType(){
+  if(Enhancer.pageType){
+    return Enhancer.pageType;
+  }
   const path = window.location.pathname.toLowerCase();
   let type = null;
   switch(path){
@@ -499,7 +507,11 @@ Enhancer.go = function go(){
       type = 'history';
       break;
   }
-  return Enhancer.getDataProcessors(type, Enhancer.opts)(document);
+  return Enhancer.pageType = type;
+}
+Enhancer.go = function go(){
+  let pageType = Enhancer.getPageType();
+  return Enhancer.getDataProcessors(pageType, Enhancer.opts)(document);
 }
 Enhancer.notifyBackground = function notifyBackground(){
   chrome.runtime.sendMessage({
