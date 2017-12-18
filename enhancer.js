@@ -443,8 +443,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
               Enhancer.enhanceOpenOrdersTable(orderTables.openOrders);
               Enhancer.enhanceMarketHistoryTable(orderTables.history);
             }
-          }, 200);
-          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
+          }, 300);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 20000);
         }
       };
     case 'balance':
@@ -454,8 +454,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
           Enhancer.interval = setInterval(function(){
             const balanceTable = Enhancer.getBalanceTable();
             Enhancer.enhanceBalanceTable(balanceTable);
-          }, 200);
-          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
+          }, 300);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 20000);
         }
       }
     case 'history':
@@ -466,8 +466,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
             const historyTables = Enhancer.getHistoryTables();
             Enhancer.enhanceHistoryTable('open', historyTables.open);
             Enhancer.enhanceHistoryTable('closed', historyTables.closed);
-          }, 200);
-          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
+          }, 300);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 20000);
         }
       }
     case 'markets':
@@ -478,8 +478,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
             let tables = Enhancer.getMarketsTables();
             Enhancer.enhanceMarketsTable(tables[2]);
             Enhancer.enhanceMarketsTable(tables[3]);
-          }, 200);
-          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 5000);
+          }, 300);
+          Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 15000);
         }
       }
     default:
