@@ -61,9 +61,9 @@ function getPriceFromNode(marketType, col){
   let nodePrice = parseFloat(col.innerText); 
   let isUsdtMarket = marketType === 'usdt';
   let currencySymbol = isUsdtMarket ? 'Ƀ' : '$';
-  let formatDp = isUsdtMarket ? 8 : 2;
   let curPrice = Enhancer.getCurrentPrice(marketType);
   let price = isUsdtMarket ? nodePrice/curPrice : curPrice*nodePrice;
+  let formatDp = isUsdtMarket ? 8 : (price < 1 ? 6 : 2);
   return currencySymbol + price.format(formatDp);
 }
 
