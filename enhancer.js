@@ -31,6 +31,7 @@ const CONSTANTS = {
   buyOrdersTableDomID: 'buyOrdersTable',
   sellOrdersTableDomID: 'sellOrdersTable',
   marketHistoryTableDomID: 'marketHistoryTable2',
+  openOrdersTableDomID: 'openMarketOrdersTable',
   balanceTableDomID: 'balanceTable',
   historyOpenTableDomID: 'allOpenOrdersTable',
   historyClosedTableDomID: 'allClosedOrdersTable',
@@ -43,7 +44,11 @@ const CONSTANTS = {
     mktHistoryBidAskUsdVal: 'mkt-history-bid-usd-val',
     mktHistoryTotalUsdVal: 'mkt-history-total-usd-val',
     mktHistoryUsdPrice: 'mkt-hist-usd-price',
-    mktHistoryUsdTotal: 'mkt-hist-usd-total'
+    mktHistoryUsdTotal: 'mkt-hist-usd-total',
+    openOrdersBidAskUsdVal: 'open-orders-bid-usd-val',
+    openOrdersTotalUsdVal: 'open-orders-total-usd-val',
+    openOrdersUsdPrice: 'open-orders-usd-price',
+    openOrdersUsdTotal: 'open-orders-usd-total'
   }
 };
 
@@ -195,10 +200,12 @@ Enhancer.getOrderTables = function getOrderTables(){
   const buyOrdersTable = document.getElementById(CONSTANTS.buyOrdersTableDomID);
   const sellOrdersTable = document.getElementById(CONSTANTS.sellOrdersTableDomID);
   const historyTable = document.getElementById(CONSTANTS.marketHistoryTableDomID);
+  const openOrdersTable = document.getElementById(CONSTANTS.openOrdersTableDomID);
   return {
     buy: buyOrdersTable,
     sell: sellOrdersTable,
-    history: historyTable
+    history: historyTable,
+    openOrders: openOrdersTable
   };
 }
 Enhancer.getBalanceTable = function getBalanceTable(){
@@ -323,20 +330,42 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
     };
   }
 }
+Enhancer.enhanceOpenOrdersTable = function enhanceOpenOrdersTable(table){
+  const rows = table.getElementsByTagName('tr');
+  if(rows && rows.length > 1){
+    for(let i=0; i<rows.length; i++){
+      let row = rows[i];
+      let priceIdx = 3;
+      let totalIdx = 8;
+      if(i===0) {
+        updateHeader(CONSTANTS.classes.openOrdersBidAskUsdVal, row, priceIdx, 'BID/ASK (Est. USD)');
+        updateHeader(CONSTANTS.classes.openOrdersTotalUsdVal, row, totalIdx, 'TOTAL (Est. USD)');
+        continue;
+      }
+      let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.openOrdersUsdPrice);
+      if(alreadyInserted){
+        priceIdx += 1;
+        totalIdx += 1;
+      }
+      updateColumn(CONSTANTS.classes.openOrdersUsdPrice, row, priceIdx);
+      updateColumn(CONSTANTS.classes.openOrdersUsdTotal, row, totalIdx);
+    };
+  }
+}
 Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
+      let priceIdx = 2;
+      let totalIdx = 5;
       let isUsdtMarket = Enhancer.getMarketType() === 'usdt';
       if(i===0) {
-        updateHeader(CONSTANTS.classes.mktHistoryBidAskUsdVal, row, 2, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
-        updateHeader(CONSTANTS.classes.mktHistoryTotalUsdVal, row, 5, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
+        updateHeader(CONSTANTS.classes.mktHistoryBidAskUsdVal, row, priceIdx, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
+        updateHeader(CONSTANTS.classes.mktHistoryTotalUsdVal, row, totalIdx, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.mktHistoryUsdPrice);
-      let priceIdx = 2;
-      let totalIdx = 5;
       if(alreadyInserted){
         priceIdx += 1;
         totalIdx += 1;
@@ -406,6 +435,7 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
             Enhancer.enhanceOrderTable('buy', orderTables.buy); 
             Enhancer.enhanceOrderTable('sell', orderTables.sell);
             if(marketQp.toLowerCase() !== 'usdt-btc'){
+              Enhancer.enhanceOpenOrdersTable(orderTables.openOrders);
               Enhancer.enhanceMarketHistoryTable(orderTables.history);
             }
           }, 200);
