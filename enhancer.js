@@ -276,7 +276,7 @@ Enhancer.enhanceHistoryTable = function enhanceHistoryOpenTable(type, table, isS
       let isEthOrder = columns[mIdx].innerText.toLowerCase().startsWith('eth');
       let estUsdPrice = parseFloat(columns[pIdx].innerText) * Enhancer.getCurrentPrice(isEthOrder?'eth':'btc');
       let estUsdValue = parseFloat(columns[vIdx].innerText) * Enhancer.getCurrentPrice(isEthOrder?'eth':'btc');
-      updateColumn(CONSTANTS.classes.estUsdPrice, row, priceIdx, 'fiat', '$'+estUsdPrice.format(2));
+      updateColumn(CONSTANTS.classes.estUsdPrice, row, priceIdx, 'fiat', '$'+estUsdPrice.format(estUsdPrice < 1 ? 6 : 2));
       updateColumn(CONSTANTS.classes.estUsdValue, row, totalIdx, 'fiat', '$'+estUsdValue.format(2));
     }
   }
