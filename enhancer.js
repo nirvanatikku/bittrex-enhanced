@@ -32,6 +32,7 @@ const CONSTANTS = {
   sellOrdersTableDomID: 'sellOrdersTable',
   marketHistoryTableDomID: 'marketHistoryTable2',
   openOrdersTableDomID: 'openMarketOrdersTable',
+  closedOrdersTableDomID: 'closedMarketOrdersTable',
   balanceTableDomID: 'balanceTable',
   historyOpenTableDomID: 'allOpenOrdersTable',
   historyClosedTableDomID: 'allClosedOrdersTable',
@@ -206,11 +207,13 @@ Enhancer.getOrderTables = function getOrderTables(){
   const sellOrdersTable = document.getElementById(CONSTANTS.sellOrdersTableDomID);
   const historyTable = document.getElementById(CONSTANTS.marketHistoryTableDomID);
   const openOrdersTable = document.getElementById(CONSTANTS.openOrdersTableDomID);
+  const closedOrdersTable = document.getElementById(CONSTANTS.closedOrdersTableDomID);
   return {
     buy: buyOrdersTable,
     sell: sellOrdersTable,
     history: historyTable,
-    openOrders: openOrdersTable
+    openOrders: openOrdersTable,
+    closedOrders: closedOrdersTable
   };
 }
 Enhancer.getBalanceTable = function getBalanceTable(){
@@ -244,13 +247,17 @@ Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
     }
   }
 }
-Enhancer.enhanceHistoryTable = function enhanceHistoryOpenTable(type, table){
+Enhancer.enhanceHistoryTable = function enhanceHistoryOpenTable(type, table, isShortTable){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
       let row = rows[i];
       let priceIdx = type === 'closed' ? 7 : 4;
       let totalIdx = type === 'closed' ? 9 : 9;
+      if(isShortTable){
+        priceIdx -= 1;
+        totalIdx -= 1;
+      }
       if(i===0) {
         updateHeader(CONSTANTS.classes.estUsdPrice+"-"+type, row, priceIdx, (type === 'closed' ? 'Hyp.' : 'Est.') + ' USD Price');
         updateHeader(CONSTANTS.classes.estUsdValue+"-"+type, row, totalIdx, (type === 'closed' ? 'Hyp.' : 'Est.') +' USD Value');
@@ -441,6 +448,7 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
             Enhancer.enhanceOrderTable('sell', orderTables.sell);
             if(marketQp.toLowerCase() !== 'usdt-btc'){
               Enhancer.enhanceOpenOrdersTable(orderTables.openOrders);
+              Enhancer.enhanceHistoryTable('closed', orderTables.closedOrders, true);
               Enhancer.enhanceMarketHistoryTable(orderTables.history);
             }
           }, 300);
