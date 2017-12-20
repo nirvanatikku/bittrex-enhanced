@@ -241,13 +241,19 @@ Enhancer.enhanceMarketsTable = function enhanceMarketsTable(table){
       }
       // Volume -> USD
       let columns = row.getElementsByTagName('td');
+      if(columns.length===1){
+        break;
+      }
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdPrice);
       let priceColIdx = alreadyInserted ? 5 : 4;
       updateColumn(CONSTANTS.classes.estUsdPrice, row, priceColIdx, Enhancer.getMarketType(columns[0].innerText));
     }
   }
 }
-Enhancer.enhanceHistoryTable = function enhanceHistoryOpenTable(type, table, isShortTable){
+Enhancer.enhanceHistoryTable = function enhanceHistoryTable(type, table, isShortTable){
+  if(!table){
+    return;
+  }
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
@@ -262,6 +268,9 @@ Enhancer.enhanceHistoryTable = function enhanceHistoryOpenTable(type, table, isS
         updateHeader(CONSTANTS.classes.estUsdPrice+"-"+type, row, priceIdx, (type === 'closed' ? 'Hyp.' : 'Est.') + ' USD Price');
         updateHeader(CONSTANTS.classes.estUsdValue+"-"+type, row, totalIdx, (type === 'closed' ? 'Hyp.' : 'Est.') +' USD Value');
         continue;
+      }
+      if(row.getElementsByTagName("td").length===1){
+        break;
       }
       // BTC Value + USD
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdValue);
@@ -291,6 +300,9 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
         updateHeader(CONSTANTS.classes.estBtcPrice, row, 4, 'Est. BTC');
         updateHeader(CONSTANTS.classes.estUsdValue, row, 10, 'Est. USD Value');
         continue;
+      }
+      if(row.getElementsByTagName("td").length===1){
+        break;
       }
       // BTC Value + USD
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estUsdValue);
@@ -333,6 +345,9 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
         updateHeader('est-price-' + type, row, priceColIdx, title + ' (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
       }
+      if(row.getElementsByTagName("td").length===1){
+        break;
+      }
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.estPrice);
       let priceIdx = priceColIdx;
       if(alreadyInserted){
@@ -343,6 +358,9 @@ Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
   }
 }
 Enhancer.enhanceOpenOrdersTable = function enhanceOpenOrdersTable(table){
+  if(!table){
+    return;
+  }
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length > 1){
     for(let i=0; i<rows.length; i++){
@@ -379,6 +397,9 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
         updateHeader(CONSTANTS.classes.mktHistoryBidAskUsdVal, row, priceIdx, 'BID/ASK (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         updateHeader(CONSTANTS.classes.mktHistoryTotalUsdVal, row, totalIdx, 'TOTAL COST (Est. ' + (isUsdtMarket?'BTC':'USD') + ')');
         continue;
+      }
+      if(row.getElementsByTagName("td").length===1){
+        break;
       }
       let alreadyInserted = getChildNodeWithClass(row, CONSTANTS.classes.mktHistoryUsdPrice);
       if(alreadyInserted){
