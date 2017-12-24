@@ -24,7 +24,6 @@ const CONSTANTS = {
   color: '#0072ed',
   colMinWidth: '100px',
   tvTrexPrefix: 'BITTREX',
-  tvChartURL: '//s3.tradingview.com/tv.js',
   btcEthTrexApiURL: 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH',
   btcPriceDomExpr: '[data-bind="text:navigation.displayBitcoinUsd"]',
   loginNodeExpr: ".fa-sign-in",
@@ -412,10 +411,6 @@ Enhancer.enhanceMarketHistoryTable = function enhanceMarketHistoryTable(table){
   }
 }
 Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker, tradingViewOpts){
-  const script = document.createElement('script');
-  script.src = CONSTANTS.tvChartURL;
-  script.async = true;
-  script.addEventListener('load', function(){
     let opts = {};
     Object.assign(opts, 
       tradingViewOpts, {
@@ -423,13 +418,7 @@ Enhancer.initTradingViewWidget = function initTradingViewWidget(ticker, tradingV
         container_id: 'tv-chart-'+Enhancer.getTickerQP()
       });
     console.log(opts);
-    let insertTradingViewChartCode = 'new TradingView.widget('+JSON.stringify(opts)+');';
-    const chartScript = document.createElement('script');
-    chartScript.type = 'text/javascript';
-    chartScript.innerText = insertTradingViewChartCode;
-    document.body.appendChild(chartScript);
-  });
-  document.head.appendChild(script);
+    new TradingView.widget(opts);
 }
 Enhancer.getTickerQP = function getTickerQP(){
   let qps = document.location.search.substring(1);
@@ -440,9 +429,8 @@ Enhancer.swapCharts = function swapCharts(tradingViewOpts){
   if(charts.length === 2){ // timeline, orderbook
     // Clean
     let node = charts[0];
-    while (node.firstChild) {
-      node.removeChild(node.firstChild);
-    }
+    let existingChart = node.getElementsByTagName("iframe")[0];
+    existingChart.remove();
     let ticker = Enhancer.getTickerQP();
     let t = ticker.split('-');
     let tradingViewTicker = CONSTANTS.tvTrexPrefix + ':' + t[1] + t[0]; // e.g. BTC-NEO => BITTREX:NEOBTC
@@ -461,7 +449,7 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
         if(opts.tvChart){
           setTimeout(function(){ 
             Enhancer.swapCharts(opts.tradingViewOpts); 
-          }, 1200);
+          }, 400);
         }
         if(opts.usdVal){
           const marketQp = Enhancer.getTickerQP();

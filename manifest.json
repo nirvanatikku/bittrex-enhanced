@@ -33,9 +33,9 @@
         "https://*.bittrex.com/Home/Markets*",
         "https://*.bittrex.com/"
       ],
-      "js": ["enhancer.js"],
+      "js": ["enhancer.js", "tv.js"],
       "css": ["enhanced-styles.css"]
     }
   ],
-  "content_security_policy": "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src https://s3.tradingview.com;"
+  "content_security_policy": "default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self'; script-src https://*.tradingview.com;"
 }
