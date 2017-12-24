@@ -317,7 +317,7 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
       const estUsdPrice = estBtcPrice * Enhancer.prices.btcUsd;
       let tkn = columns[1].innerText.replace(/\s+/g, '').toLowerCase();
       if(tkn !== 'bitcoin'){
-        updateColumn(CONSTANTS.classes.estUsdPrice, row, 3, 'fiat', '$' + estUsdPrice.format(2));
+        updateColumn(CONSTANTS.classes.estUsdPrice, row, 3, 'fiat', '$' + estUsdPrice.format(estUsdPrice < 1 ? 6 : 2));
         updateColumn(CONSTANTS.classes.estBtcPrice, row, 4, 'btc', 'Ƀ' + estBtcPrice.format(8));
       } else {
         updateColumn(CONSTANTS.classes.estUsdPrice, row, 3, 'fiat', "-");
