@@ -2,9 +2,9 @@ html { height:100%; width:100%; }
 body{ width:225px; height:400px; padding:10px 5px; }
 body h1 { text-align: center; margin:0 auto; border-bottom:1px solid #eee; padding-bottom:0; }
 body h3 { border-bottom:1px solid #eee; padding-bottom:15px; }
-button { border:0px ; width:100%; padding:10px 15px; background: #0072ed; color: white; text-align:left; cursor:pointer; }
+button { border:0px ; width:100%; padding:10px 15px; background: #0082D7; color: white; text-align:left; cursor:pointer; }
 button[data-enabled=true] { color:white; }
-button[data-enabled=false] { background: #eee; color:#0072ed; }
+button[data-enabled=false] { background: #eee; color:#0082D7; }
 button[data-enabled=true] .enabled { display:none; }
 button[data-enabled=true] .disabled { display:block; }
 button[data-enabled=false] .enabled { display:block; }

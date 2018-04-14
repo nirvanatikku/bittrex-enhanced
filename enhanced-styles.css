@@ -9,23 +9,24 @@
 * {
     border-radius: 0px !important;
 }
-.table td.est-usd-price,
-.table td.est-usd-value,
-.table td.mkt-hist-usd-price,
-.table td.mkt-hist-usd-total,
-.table td.est-price {
-    text-align:right;
-}
+table td.est-btc-price,
+table td.est-usd-price,
+table td.est-usd-value,
+table td.mkt-hist-usd-price,
+table td.mkt-hist-usd-total,
+table td.est-price,
 #est-price-BTC,
 #est-price-ETH,
 #est-btc-price,
 #est-usd-value,
 #est-usd-price,
 #est-price-buy,
-#est-price-sell,
 #mkt-history-bid-usd-val,
-#mkt-history-total-usd-val,
-.table td.est-btc-price
+#mkt-history-total-usd-val
 { 
-    text-align:center; 
+    text-align: right !important;
+}
+#est-price-sell,
+#sellOrdersTable td.est-price {
+    text-align: left !important;
 }

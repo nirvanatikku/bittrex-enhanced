@@ -21,12 +21,13 @@
 // THE SOFTWARE.
 
 const CONSTANTS = {
-  color: '#0072ed',
+  color: '#009af8',
   colMinWidth: '100px',
   tvTrexPrefix: 'BITTREX',
   btcEthTrexApiURL: 'https://bittrex.com/api/v1.1/public/getticker?market=BTC-ETH',
-  btcPriceDomExpr: '[data-bind="text:navigation.displayBitcoinUsd"]',
+  btcUsdTrexApiURL: 'https://bittrex.com/api/v2.0/pub/currencies/GetBTCPrice',
   loginNodeExpr: ".fa-sign-in",
+  marketHeaderParentDomID: 'main_content',
   buyOrdersTableDomID: 'buyOrdersTable',
   sellOrdersTableDomID: 'sellOrdersTable',
   marketHistoryTableDomID: 'marketHistoryTable2',
@@ -121,6 +122,21 @@ function updateColumn(colClass, row, priceColIdx, marketType, priceVal){
   }
 }
 
+function updateMarketHeader(priceNode, nameNode, nameNodeClass) {
+  const price = getPriceFromNode(Enhancer.getMarketType(), priceNode);
+  let existingNode = getChildNodeWithClass(nameNode, nameNodeClass);
+  if (!existingNode) {
+    const newNode = document.createElement('span');
+    newNode.style.color = CONSTANTS.color;
+    newNode.style.marginRight = '5px';
+    newNode.className = nameNodeClass;
+    newNode.innerText = price;
+    nameNode.prepend(newNode);
+  } else {
+    existingNode.innerText = price;
+  }
+}
+
 function whenReady(callback) {
   if (document.readyState === 'complete') callback();
   else { document.onreadystatechange = callback; }
@@ -143,9 +159,11 @@ Enhancer.prices = {
 };
 Enhancer.interval = null;
 Enhancer.initBtcPrice = function initBtcPrice(){
-  const node = document.querySelectorAll(CONSTANTS.btcPriceDomExpr)[0];
-  const btcUsdPrice = parseFloat(node.innerText.split('=')[1].replace('$', ''));
-  return btcUsdPrice;
+  const ethTickerURL = CONSTANTS.btcUsdTrexApiURL;
+  let xhr = new XMLHttpRequest();
+  xhr.open('GET', ethTickerURL, false);
+  xhr.send(null);
+  return JSON.parse(xhr.responseText).result.bpi.USD.rate_float;
 }
 Enhancer.initEthPrice = function initEthPrice(){
   const ethTickerURL = CONSTANTS.btcEthTrexApiURL;
@@ -328,6 +346,15 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
     }
   }
 }
+Enhancer.enhanceMarketHeader = function enhanceMarketHeader() {
+  const content = document.getElementById(CONSTANTS.marketHeaderParentDomID);
+  let nodes = content.querySelector('nav:first-child').querySelectorAll('.info-item');
+  for (let i = 0; i < nodes.length; i++) {
+    let priceNode = nodes[i].childNodes[3].childNodes[3];
+    let nameNode = nodes[i].childNodes[5];
+    updateMarketHeader(priceNode, nameNode, CONSTANTS.classes.estPrice);
+  }
+}
 Enhancer.enhanceOrderTable = function enhanceOrderTable(type, table){
   const rows = table.getElementsByTagName('tr');
   if(rows && rows.length > 1){
@@ -456,6 +483,7 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
           Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){ 
             const orderTables = Enhancer.getOrderTables();
+            Enhancer.enhanceMarketHeader();
             Enhancer.enhanceOrderTable('buy', orderTables.buy); 
             Enhancer.enhanceOrderTable('sell', orderTables.sell);
             if(marketQp.toLowerCase() !== 'usdt-btc'){
@@ -496,8 +524,8 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
           Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){
             let tables = Enhancer.getMarketsTables();
-            Enhancer.enhanceMarketsTable(tables[2]);
-            Enhancer.enhanceMarketsTable(tables[3]);
+            Enhancer.enhanceMarketsTable(tables[0]);
+            Enhancer.enhanceMarketsTable(tables[1]);
           }, 300);
           Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 15000);
         }
