@@ -42,6 +42,7 @@ const CONSTANTS = {
     estUsdPrice: 'est-usd-price',
     estBtcPrice: 'est-btc-price',
     estUsdValue: 'est-usd-value',
+    currentBtcPrice: 'current-btc-price',
     mktHistoryBidAskUsdVal: 'mkt-history-bid-usd-val',
     mktHistoryTotalUsdVal: 'mkt-history-total-usd-val',
     mktHistoryUsdPrice: 'mkt-hist-usd-price',
@@ -134,6 +135,20 @@ function updateMarketHeader(priceNode, nameNode, nameNodeClass) {
     nameNode.prepend(newNode);
   } else {
     existingNode.innerText = price;
+  }
+}
+
+function updateAccountBalanceHeader(headerNode,headerNodeClass,price) {
+  let existingNode = getChildNodeWithClass(headerNode, headerNodeClass);
+  let prefix = '1 BTC = $';
+  if (!existingNode) {
+    const newNode = document.createElement('span');
+    newNode.style.color = CONSTANTS.color;
+    newNode.className = headerNodeClass;
+    newNode.innerText = prefix + price;
+    headerNode.append(newNode);
+  } else {
+    existingNode.innerText = prefix + price;
   }
 }
 
@@ -346,6 +361,10 @@ Enhancer.enhanceBalanceTable = function balanceTable(table){
     }
   }
 }
+Enhancer.enhanceAccountBalanceHeader = function enhanceAccountBalanceHeader() {
+  const node = document.querySelector('#account_balance_table > .table-heading > div.visible-lg');
+  updateAccountBalanceHeader(node, CONSTANTS.classes.currentBtcPrice, Enhancer.prices.btcUsd.toFixed(4));
+}
 Enhancer.enhanceMarketHeader = function enhanceMarketHeader() {
   const content = document.getElementById(CONSTANTS.marketHeaderParentDomID);
   let nodes = content.querySelector('nav:first-child').querySelectorAll('.info-item');
@@ -501,6 +520,7 @@ Enhancer.getDataProcessors = function getDataProcessors(proc, opts){
           Enhancer.updatePrices();
           Enhancer.interval = setInterval(function(){
             const balanceTable = Enhancer.getBalanceTable();
+            Enhancer.enhanceAccountBalanceHeader();
             Enhancer.enhanceBalanceTable(balanceTable);
           }, 300);
           Enhancer.prices.interval = setInterval(Enhancer.updatePrices, 20000);
