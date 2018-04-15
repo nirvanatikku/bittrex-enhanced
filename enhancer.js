@@ -174,9 +174,9 @@ Enhancer.prices = {
 };
 Enhancer.interval = null;
 Enhancer.initBtcPrice = function initBtcPrice(){
-  const ethTickerURL = CONSTANTS.btcUsdTrexApiURL;
+  const btcTickerURL = CONSTANTS.btcUsdTrexApiURL;
   let xhr = new XMLHttpRequest();
-  xhr.open('GET', ethTickerURL, false);
+  xhr.open('GET', btcTickerURL, false);
   xhr.send(null);
   return JSON.parse(xhr.responseText).result.bpi.USD.rate_float;
 }
